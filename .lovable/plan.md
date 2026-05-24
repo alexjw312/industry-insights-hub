@@ -1,139 +1,84 @@
-# TrendLingo — Build Plan
+# TrendLingo — Personalization & Polish Update
 
-Duolingo 스타일의 산업 트렌드 학습 앱. Mock 데이터로 시작하되, 실제 로그인과 학습 진행도(완료한 브리핑, 퀴즈 점수, 스트릭)는 Lovable Cloud에 저장합니다.
+## 1. Difficulty levels (per-user reading mode)
 
-## 1. Pages & Routes (TanStack Start file-based routing)
+User-selectable reading level that controls **how each briefing is explained**:
 
-```text
-src/routes/
-  __root.tsx                          기존 유지 + Auth listener + QueryClient
-  index.tsx                           Homepage (6개 카테고리 카드)
-  login.tsx                           이메일/패스워드 + Google 로그인
-  categories.$slug.tsx                카테고리 대시보드 (Today/Week/Month 탭)
-  _authenticated.tsx                  Auth gate layout
-  _authenticated/profile.tsx          학습 진행도 + 스트릭
-```
+- **Beginner** — plain language, analogies, no jargon. Defines every acronym.
+- **Intermediate** — assumes basic industry knowledge. Default.
+- **Advanced** — technical depth, numbers, second-order effects.
 
-- 카테고리별 대시보드는 비로그인도 열람 가능 (학습 자체는 자유)
-- "Mark as Learned"와 퀴즈 결과 저장은 로그인 필요 → 클릭 시 `/login`으로 유도
-- 카테고리: AI, Semiconductors, Stocks & Investing, Automotive/EV, Healthcare, Energy
-- 각 라우트마다 고유한 `head()` 메타데이터 (SEO)
+Implementation:
+- Extend each `Briefing` so the long-form fields (`longExplanation`, `whyItMatters`, `backgroundContext`, `industryImpact`) become `{ beginner, intermediate, advanced }` objects. Mock data filled for AI / Semiconductors / Stocks; other categories fall back to `intermediate`.
+- **Reading level** segmented control in the briefing detail modal header (instant switch, no reload).
+- Persist preference: `localStorage` for guests, `profiles.reading_level` column for logged-in users (synced on login).
+- Quiz also becomes `{ beginner, intermediate, advanced }` with tougher distractors per level.
+- Placeholder `summarizeWithLLM(briefing, { level })` signature updated for future LLM regeneration per level.
 
-## 2. Components
+## 2. Time windows — nested current/previous
+
+Top-level tabs stay **Daily / Weekly / Monthly** (3 tabs). Inside each, a smaller secondary toggle switches between current and previous period:
 
 ```text
-src/components/
-  HomeHero.tsx              타이틀, 태그라인, CTA
-  CategoryCard.tsx          아이콘 + 설명 + Start Learning
-  CategoryHeader.tsx        선택된 산업 헤더 + Back 버튼
-  TimeWindowTabs.tsx        Today / Week / Month 탭
-  BriefingCard.tsx          요약 카드 (difficulty/keywords/reading time badges)
-  BriefingDetailModal.tsx   상세 모달 (Dialog from shadcn)
-  QuizBox.tsx               객관식 1문항 + 정답 피드백
-  StreakBadge.tsx           "🔥 N day streak" 배지
-  ProgressIndicator.tsx     "X / 9 briefings learned"
-  AuthButtons.tsx           로그인/로그아웃 헤더 버튼
+[ Daily ] [ Weekly ] [ Monthly ]
+   └─ ( Today | Yesterday )
+   └─ ( This Week | Last Week )
+   └─ ( This Month | Last Month )
 ```
 
-## 3. Mock Data
+- `TimeWindow` type becomes `{ bucket: 'daily'|'weekly'|'monthly', period: 'current'|'previous' }`.
+- Outer = existing `Tabs`; inner = compact `ToggleGroup` (single-select pill) above the briefing grid. Stays readable on the 729px viewport.
+- Default lands on current period; selection is remembered per-bucket while navigating (so switching Daily→Weekly→Daily keeps your "Yesterday" pick).
+- Mock data gets a small "previous period" set per category (3 per prior window for AI/Semi/Stocks, 1–2 elsewhere) so tabs aren't empty.
+- Profile page gains a "this week vs last week" comparison stat.
 
-`src/data/briefings.ts` — 단일 source of truth. 데이터 모델은 유저가 제공한 스키마 그대로 + `importanceScore` 필드 추가.
+## 3. Internationalization — English & Korean
 
-- AI, Semiconductors, Stocks & Investing: 각각 9개 (today 3 + week 3 + month 3)
-- Automotive/EV, Healthcare, Energy: 각각 3개 정도 placeholder
-- 각 briefing마다 quiz 1개
+- Add `i18next` + `react-i18next`.
+- UI strings extracted to `src/locales/{en,ko}.json` (nav, buttons, tab labels, modal sections, profile stats, auth, toasts).
+- Briefing content is bilingual: every text field becomes `{ en, ko }`. Mock data filled for both languages on AI/Semi/Stocks; others ship English-only with a "Translation coming soon" notice when KO is selected and missing.
+- Language switcher in the header (EN / KO). Persisted in `localStorage` for guests, `profiles.language` for logged-in users.
+- `<html lang>` updated reactively for SEO/a11y. Per-route meta titles/descriptions localized.
+- Placeholder `summarizeWithLLM(briefing, { level, lang })` updated for future translation pipeline.
 
-```ts
-// 향후 확장용 placeholder 함수 (주석 + 빈 구현)
-export async function fetchNewsByCategory(category: string) { /* TODO: real API */ }
-export function rankArticlesByImportance(items: Briefing[]) { /* importanceScore 정렬 */ }
-export async function summarizeWithLLM(rawText: string) { /* Lovable AI Gateway */ }
-export async function generateQuizFromBriefing(b: Briefing) { /* LLM */ }
-```
+## 4. Per-category theming
 
-## 4. Backend (Lovable Cloud)
+Each category gets its own accent color + subtle gradient, applied to category cards, the category header, badges, and the "Why it matters" highlight box.
 
-### Auth
-- Email/password + Google (Lovable broker 사용)
-- `_authenticated` layout으로 보호된 라우트 게이트
+Suggested palette (all defined as CSS tokens in `src/styles.css`):
 
-### Database tables (with RLS)
+- **AI** — violet (`oklch(0.62 0.18 290)`)
+- **Semiconductors** — electric blue (`oklch(0.62 0.16 240)`)
+- **Stocks** — emerald green (current primary)
+- **Automotive / EV** — orange (`oklch(0.68 0.17 50)`)
+- **Healthcare** — teal (`oklch(0.65 0.12 190)`)
+- **Energy** — amber/gold (`oklch(0.72 0.15 80)`)
 
-```sql
--- 학습 완료 기록
-user_progress (
-  id uuid pk,
-  user_id uuid references auth.users on delete cascade,
-  briefing_id text not null,        -- mock data의 id 문자열
-  category text not null,
-  completed_at timestamptz default now(),
-  unique(user_id, briefing_id)
-)
+`CATEGORIES` gains `colorToken` + `gradientToken`. A small `useCategoryTheme(slug)` hook injects scoped CSS vars (`--category`, `--category-gradient`) on the category page wrapper. Global semantic tokens (`--primary`, etc.) stay untouched.
 
--- 퀴즈 결과
-quiz_attempts (
-  id uuid pk,
-  user_id uuid references auth.users on delete cascade,
-  briefing_id text not null,
-  selected_answer text not null,
-  is_correct boolean not null,
-  attempted_at timestamptz default now()
-)
+## 5. Other ideas worth considering
 
--- 스트릭 (집계는 함수로)
-user_streaks (
-  user_id uuid pk references auth.users on delete cascade,
-  current_streak int default 0,
-  longest_streak int default 0,
-  last_active_date date
-)
-```
+Pick any to include now; rest can be deferred:
 
-- 모든 테이블 RLS 활성화, `user_id = auth.uid()` 정책
-- 프로필 테이블은 만들지 않음 (이름/아바타 등 필요 없음 — auth.users만 사용)
+1. **Daily lesson goal & streak protection** — goal of 1/3/5 briefings/day, progress ring in header, one "freeze" per week.
+2. **Bookmark / "Read later"** — save briefings to a personal list on profile.
+3. **Search & keyword filter** — search across briefings, filter by tag (`#NVIDIA`, `#EV`) across categories.
+4. **"Trending now" on home** — top 3 by importance across all industries, for discovery.
+5. **Dark mode toggle** — tokens already OKLCH; mostly a `.dark` palette + header switch.
+6. **Share a briefing** — OG image per briefing + copy-link button. Great for portfolio demos.
+7. **Audio mode (TTS)** — browser `SpeechSynthesis`, no backend cost.
+8. **Glossary tooltips** — hover/tap acronyms (LLM, HBM, P/E) for inline definitions. Pairs naturally with Beginner mode.
 
-### Server Functions (`createServerFn`)
+My recommendation for this round: **#1, #3, #5, #8** — reinforce the learning-app feel without ballooning scope.
 
-```text
-src/lib/progress.functions.ts
-  - markBriefingLearned({ briefingId, category })
-  - submitQuizAttempt({ briefingId, selectedAnswer, isCorrect })
-  - getUserProgress()        // 진행도 + 스트릭 집계
-```
+## Technical notes
 
-전부 `requireSupabaseAuth` 미들웨어로 보호. `src/start.ts`에 `attachSupabaseAuth` 등록 확인.
+- DB migration: new `profiles` table with `reading_level` (`text default 'intermediate'`), `language` (`text default 'en'`), optionally `daily_goal int`. Auto-created on first login via trigger on `auth.users`. RLS: user can read/update own row.
+- New server fn `updatePreferences({ reading_level?, language?, daily_goal? })` protected by `requireSupabaseAuth`.
+- `Briefing` type refactor is the largest mechanical change — done in one pass.
+- Guest preferences (localStorage) sync into Supabase on first login (server wins if set, else use local).
 
-## 5. Design
+## Questions before I build
 
-모던 SaaS / 학습 앱 톤. Linear/Notion + Duolingo의 친근함 약간.
-
-- **컬러 (oklch in `src/styles.css`)**: 부드러운 그린 primary (학습/성장), 따뜻한 오렌지 accent (스트릭/CTA), 깔끔한 오프화이트 배경, 진한 슬레이트 텍스트. 다크모드 토큰 함께 정의.
-- **타이포**: Geist 또는 Inter (헤딩 semibold)
-- **레이아웃**: 카드 중심, 부드러운 그림자 (`shadow-elegant` 토큰), `rounded-2xl`, 넉넉한 spacing
-- **배지**: difficulty(난이도별 컬러), reading time, keywords
-- **모션**: framer-motion으로 카드 마운트 시 살짝 fade-up, 모달 부드럽게
-- 반응형: 모바일 1열 → 태블릿 2열 → 데스크탑 3열
-
-## 6. Build Order
-
-1. Lovable Cloud 활성화 + DB 스키마 마이그레이션
-2. Design tokens + 글로벌 스타일
-3. Mock data (`src/data/briefings.ts`) + types
-4. Homepage + CategoryCard
-5. Category dashboard + TimeWindowTabs + BriefingCard
-6. BriefingDetailModal + QuizBox
-7. Auth (login 페이지 + `_authenticated` layout + root listener)
-8. Server functions + "Mark as Learned" / 퀴즈 결과 저장 연결
-9. Profile 페이지 + StreakBadge + ProgressIndicator
-10. SEO 메타데이터 + 폴리시
-
-## 7. Out of Scope (나중에)
-
-- 실제 뉴스 API / LLM 요약 연동 (placeholder 함수만 남김)
-- 푸시 알림, 이메일 다이제스트
-- 카테고리 추가 / 사용자별 즐겨찾기
-- 리더보드, 친구 기능
-
----
-
-**기술 메모**: TanStack Start v1 + React 19 + Tailwind v4 (이미 셋업됨). Supabase Edge Functions는 사용하지 않고 모든 백엔드 로직은 `createServerFn`. `src/integrations/supabase/client.server`는 admin 작업에만, 유저 스코프 작업은 `requireSupabaseAuth` 미들웨어 사용.
+1. For Korean, do you want me to **translate the existing mock briefings into KO myself**, or ship KO with placeholder copy and let real translation come with the LLM integration later?
+2. Which of the "other ideas" should I include in this round? (My pick: 1, 3, 5, 8.)
