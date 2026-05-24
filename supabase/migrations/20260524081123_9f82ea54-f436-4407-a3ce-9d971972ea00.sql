@@ -1,0 +1,1 @@
+revoke execute on function public.bump_user_streak(uuid) from public, anon, authenticated;
