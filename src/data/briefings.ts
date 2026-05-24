@@ -1,4 +1,4 @@
-import type { Briefing, CategoryMeta } from "@/types";
+import type { Briefing, CategoryMeta, TimeWindow } from "@/types";
 
 export const CATEGORIES: CategoryMeta[] = [
   {
@@ -7,6 +7,7 @@ export const CATEGORIES: CategoryMeta[] = [
     description: "Foundation models, agents, and AI policy moves.",
     icon: "Sparkles",
     accent: "primary",
+    colorToken: "category-ai",
   },
   {
     slug: "semiconductors",
@@ -14,6 +15,7 @@ export const CATEGORIES: CategoryMeta[] = [
     description: "Chips, fabs, EUV, and the silicon supply chain.",
     icon: "Cpu",
     accent: "accent",
+    colorToken: "category-semi",
   },
   {
     slug: "stocks",
@@ -21,6 +23,7 @@ export const CATEGORIES: CategoryMeta[] = [
     description: "Markets, earnings, and macro that move portfolios.",
     icon: "TrendingUp",
     accent: "primary",
+    colorToken: "category-stocks",
   },
   {
     slug: "automotive",
@@ -28,6 +31,7 @@ export const CATEGORIES: CategoryMeta[] = [
     description: "EVs, autonomy, and the future of mobility.",
     icon: "Car",
     accent: "accent",
+    colorToken: "category-auto",
   },
   {
     slug: "healthcare",
@@ -35,6 +39,7 @@ export const CATEGORIES: CategoryMeta[] = [
     description: "Biotech, drug approvals, and health systems.",
     icon: "Stethoscope",
     accent: "primary",
+    colorToken: "category-health",
   },
   {
     slug: "energy",
@@ -42,6 +47,7 @@ export const CATEGORIES: CategoryMeta[] = [
     description: "Oil, renewables, grids, and the energy transition.",
     icon: "Zap",
     accent: "accent",
+    colorToken: "category-energy",
   },
 ];
 
@@ -1206,12 +1212,199 @@ export const BRIEFINGS: Briefing[] = [
 ];
 
 // ---------------------------------------------------------------------------
+// Prior-period mock data — one short item per category, so the
+// "Yesterday / Last Week / Last Month" toggle is never empty.
+// ---------------------------------------------------------------------------
+
+const makePrior = (
+  id: string,
+  category: Briefing["category"],
+  timeWindow: TimeWindow,
+  title: string,
+  short: string,
+  long: string,
+  why: string,
+): Briefing => ({
+  id,
+  category,
+  timeWindow,
+  title,
+  shortSummary: short,
+  longExplanation: long,
+  whyItMatters: why,
+  backgroundContext:
+    "This briefing was the top story from the prior period and is preserved for context and comparison.",
+  industryImpact:
+    "Use this to see how this period's developments build on (or diverge from) the prior period's narrative.",
+  keyCompanies: [],
+  keywords: ["recap", category],
+  difficulty: "Beginner",
+  readingTime: "2 min",
+  sourceName: "TrendLingo Recap",
+  sourceUrl: "#",
+  publishedDate: "2026-05-20",
+  importanceScore: 0.5,
+  quiz: {
+    question: "What kind of briefing is this?",
+    options: ["A live news alert", "A prior-period recap", "An ad"],
+    correctAnswer: "A prior-period recap",
+  },
+});
+
+const PRIOR_BRIEFINGS: Briefing[] = [
+  makePrior("ai-y1", "ai", "yesterday",
+    "OpenAI publishes safety eval results for agent mode",
+    "Ahead of today's rollout, OpenAI shared red-team results on its long-horizon agent.",
+    "Yesterday's release covered jailbreak resistance, tool misuse, and audit-log completeness — setting expectations for today's enterprise launch.",
+    "Safety evals are how labs preempt regulator and enterprise-buyer questions."),
+  makePrior("ai-lw1", "ai", "lastWeek",
+    "Claude 4.5 ships with longer context and tool-use upgrades",
+    "Anthropic shipped Claude 4.5 last week with a 2M-token context and better tool routing.",
+    "The release closed a feature gap on context length and made tool selection more reliable, setting up this week's frontier-lab comparisons.",
+    "Context length compounds — agents can reason over entire codebases or document sets in one pass."),
+  makePrior("ai-lm1", "ai", "lastMonth",
+    "AI agents cross 50% on a public office-work benchmark",
+    "Last month, agents broke 50% completion on a real-world office benchmark.",
+    "It's the first time an open evaluation showed agents finishing the majority of standard office tasks unsupervised — context for this month's capex acceleration.",
+    "It is the data point that justified another leg of hyperscaler spend."),
+
+  makePrior("sc-y1", "semiconductors", "yesterday",
+    "TSMC raises 2026 capex guidance ahead of N2 launch",
+    "TSMC pre-announced higher capex, setting up today's N2 ramp news.",
+    "Yesterday's guidance increase signaled confidence in early-N2 demand and front-loaded equipment orders.",
+    "Capex guidance is the cleanest leading indicator for the entire equipment supply chain."),
+  makePrior("sc-lw1", "semiconductors", "lastWeek",
+    "SK hynix sells out HBM4 capacity through 2027",
+    "Last week SK hynix confirmed full sell-out of HBM4 capacity.",
+    "HBM remains the tightest AI-chip input. Last week's allocation news set the stage for today's export-control move.",
+    "When supply is sold out years ahead, regulation becomes the next lever buyers and governments pull."),
+  makePrior("sc-lm1", "semiconductors", "lastMonth",
+    "Nvidia Blackwell Ultra hits full production",
+    "Last month Blackwell Ultra reached steady-state volume — context for this month's Rubin tease.",
+    "It freed Nvidia to talk about the next platform without spooking buyers of the current one.",
+    "Product transitions are choreographed: prior-gen has to be 'safe' before next-gen marketing begins."),
+
+  makePrior("st-y1", "stocks", "yesterday",
+    "Yesterday's PPI hints at today's CPI surprise",
+    "Producer prices surprised to the downside yesterday, foreshadowing today's softer CPI.",
+    "PPI often leads CPI by a day. Traders who read the signal positioned ahead of today's rally.",
+    "Sequencing of macro prints matters as much as the prints themselves."),
+  makePrior("st-lw1", "stocks", "lastWeek",
+    "Mag-7 earnings season wraps with mixed reads",
+    "Mega-cap tech earnings finished mixed last week — guidance gaps set up this week's volatility.",
+    "Aggregate AI capex commentary was strong, but per-name margin guides diverged.",
+    "Index-level optimism can mask growing dispersion under the surface."),
+  makePrior("st-lm1", "stocks", "lastMonth",
+    "BOJ signals patience, kicking off Japan's run",
+    "The BOJ's patience signal last month is why Japan kept grinding higher this month.",
+    "It anchored expectations for an extended weak-yen, equity-positive backdrop.",
+    "Central-bank guidance changes the discount rate every asset is priced against."),
+
+  makePrior("auto-y1", "automotive", "yesterday",
+    "EV price war intensifies in China",
+    "Chinese EV makers cut prices again yesterday, pressuring global incumbents.",
+    "BYD and rivals trimmed sticker prices and added incentives, squeezing margins across the sector.",
+    "Auto pricing in China sets the global ceiling for EV margins."),
+  makePrior("auto-lw1", "automotive", "lastWeek",
+    "Self-driving rideshare crosses 10M paid trips",
+    "Robotaxi services reported a milestone in trip volume last week.",
+    "Volume growth proves the unit economics work in at least a handful of cities.",
+    "It validates the model for cautious capital — expect more launch cities next."),
+  makePrior("auto-lm1", "automotive", "lastMonth",
+    "Solid-state battery pilot lines come online",
+    "Two OEMs brought solid-state pilot lines online last month.",
+    "Pilot-line news matters more than lab results because it commits real capex.",
+    "Battery chemistry is the single biggest cost lever in EVs for the next decade."),
+
+  makePrior("health-y1", "healthcare", "yesterday",
+    "FDA accepts BLA for novel obesity dual-agonist",
+    "The FDA accepted a Biologics License Application for a next-gen obesity drug yesterday.",
+    "Acceptance starts the review clock — a near-term catalyst the market priced in immediately.",
+    "BLA acceptance is procedural but information-rich; the market treats it as a real catalyst."),
+  makePrior("health-lw1", "healthcare", "lastWeek",
+    "GLP-1 supply finally meets demand in the US",
+    "Manufacturing scale-ups closed the GLP-1 shortage last week.",
+    "Pricing power may finally normalize as on-shelf supply becomes routine.",
+    "Shortages distort revenue and margin — normalization resets the baseline."),
+  makePrior("health-lm1", "healthcare", "lastMonth",
+    "First CRISPR therapy hits commercial milestone",
+    "A first-wave CRISPR therapy passed a meaningful commercial milestone last month.",
+    "It is the first proof that gene-editing economics can clear regulatory and payer hurdles.",
+    "The 'will payers pay?' question is finally getting answered."),
+
+  makePrior("energy-y1", "energy", "yesterday",
+    "OPEC+ holds production unchanged",
+    "OPEC+ left production targets unchanged yesterday, keeping oil rangebound.",
+    "A no-news decision is itself a signal: the cartel is comfortable at current price levels.",
+    "Inaction maintains the floor under prices without spiking them."),
+  makePrior("energy-lw1", "energy", "lastWeek",
+    "US grid sets new summer peak record",
+    "Multiple US ISOs reported new peak loads last week, driven by data centers and heat.",
+    "Peak records compress reserve margins and accelerate the case for new capacity.",
+    "Demand growth, not just generation mix, is now the binding story for the grid."),
+  makePrior("energy-lm1", "energy", "lastMonth",
+    "Long-duration storage projects break ground",
+    "Last month saw multiple long-duration storage projects move from FID to construction.",
+    "Long-duration storage is the missing piece for high-renewable grids.",
+    "Once construction starts, learning curves and supply chains begin to form."),
+];
+
+// Per-difficulty rewrites for a handful of flagship briefings. Other briefings
+// fall back to base text; the modal surfaces a notice in that case.
+const LEVEL_OVERRIDES: Record<string, Briefing["levels"]> = {
+  "ai-t1": {
+    beginner: {
+      longExplanation:
+        "Imagine asking an assistant to 'plan our team offsite' and walking away. It searches for venues, drafts the agenda, and emails vendors — by itself. That's 'agent mode': it breaks one big request into many small steps and does them on its own. Today's update lets large companies use it with proper safety controls.",
+      whyItMatters:
+        "Most office work is a series of small steps. If AI can chain them together reliably, a task that took half a day can now be triggered with one sentence.",
+    },
+    advanced: {
+      longExplanation:
+        "Agent mode exposes a planner-executor loop with tool routing, persistent memory, and audit hooks. Today's enterprise GA tier adds per-tool RBAC, signed audit logs streamed to the customer's SIEM, and per-run budget caps — the missing controls that previously blocked production use beyond pilots.",
+      whyItMatters:
+        "The unit of automation shifts from prompt to multi-hour workflow. Vendors whose value proposition is workflow orchestration face direct substitution risk on a 12–18 month horizon.",
+    },
+  },
+  "sc-t1": {
+    beginner: {
+      longExplanation:
+        "Transistors are the tiny on/off switches inside every chip. To pack more in, the industry keeps redesigning them. TSMC's new '2nm' process uses a new switch design (called gate-all-around) so chips in next year's iPhones and AI servers can be faster and use less power.",
+    },
+    advanced: {
+      longExplanation:
+        "N2 transitions from FinFET to nanosheet GAA, improving electrostatic control and enabling Vt tuning via sheet width. Early defect density is reportedly tracking ahead of N3 at the equivalent ramp point. Apple holds lead-customer status; HPC tape-outs (Nvidia Rubin, AMD MI400) follow in H2 with CoWoS-L packaging.",
+    },
+  },
+  "st-t1": {
+    beginner: {
+      longExplanation:
+        "Inflation came in lower than expected. When inflation cools, the Federal Reserve usually lowers interest rates. Lower rates make stocks more attractive than savings accounts and bonds, so investors bought today.",
+      whyItMatters:
+        "Inflation is the single biggest thing investors watch. Even a small surprise can move the entire market.",
+    },
+    advanced: {
+      longExplanation:
+        "Headline CPI printed 2.3% YoY vs 2.5% consensus; core moderated on softer shelter and services ex-energy. Fed funds futures repriced from 1 cut to 2 cuts by year-end, with the first cut now ~70% by September. Curve bull-steepened: 2s richened 12bp, 10s 6bp, lifting long-duration equities (XLK, semis) into the close.",
+    },
+  },
+};
+
+for (const b of BRIEFINGS) {
+  if (LEVEL_OVERRIDES[b.id]) {
+    b.levels = LEVEL_OVERRIDES[b.id];
+  }
+}
+
+BRIEFINGS.push(...PRIOR_BRIEFINGS);
+
+// ---------------------------------------------------------------------------
 // Helpers (also act as placeholders for future real-API integration)
 // ---------------------------------------------------------------------------
 
 export function getBriefingsForCategory(
   category: string,
-  timeWindow: "today" | "week" | "month",
+  timeWindow: TimeWindow,
 ) {
   return BRIEFINGS.filter(
     (b) => b.category === category && b.timeWindow === timeWindow,
@@ -1227,7 +1420,6 @@ export function getBriefingById(id: string) {
 
 // Future: replace with live news/LLM pipeline.
 export async function fetchNewsByCategory(_category: string) {
-  // TODO: fetch from real news API (e.g., NewsAPI, GDELT)
   return [];
 }
 
@@ -1237,12 +1429,17 @@ export function rankArticlesByImportance<T extends { importanceScore: number }>(
   return [...items].sort((a, b) => b.importanceScore - a.importanceScore);
 }
 
-export async function summarizeWithLLM(_rawText: string) {
-  // TODO: call Lovable AI Gateway with a beginner-friendly system prompt.
+// Future LLM hooks — now aware of reading level and language.
+export async function summarizeWithLLM(
+  _rawText: string,
+  _opts?: { level?: "beginner" | "intermediate" | "advanced"; lang?: "en" | "ko" },
+) {
   return "";
 }
 
-export async function generateQuizFromBriefing(_b: unknown) {
-  // TODO: call LLM to produce a multiple-choice question.
+export async function generateQuizFromBriefing(
+  _b: unknown,
+  _opts?: { level?: "beginner" | "intermediate" | "advanced"; lang?: "en" | "ko" },
+) {
   return null;
 }

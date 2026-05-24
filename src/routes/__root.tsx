@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Session } from "@supabase/supabase-js";
+import "@/lib/i18n";
 
 import appCss from "../styles.css?url";
 
