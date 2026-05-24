@@ -1,0 +1,91 @@
+{
+  "nav": {
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "streak": "Streak",
+    "profile": "Profile"
+  },
+  "home": {
+    "tagline": "Daily · Weekly · Monthly",
+    "headlineA": "Learn today's most important",
+    "headlineB": "industry trends",
+    "headlineC": "in minutes.",
+    "subtitle": "AI-powered briefings for fast-moving industries. Bite-sized lessons, beginner-friendly explanations, and a quiz to test what you learned.",
+    "ctaPick": "Pick a category",
+    "ctaSignIn": "Sign in to track progress",
+    "perBriefing": "3–7 min per briefing",
+    "topStories": "Top 3 stories per window",
+    "pickIndustry": "Pick your industry",
+    "pickIndustrySub": "Six fast-moving categories. More coming soon.",
+    "startLearning": "Start learning"
+  },
+  "category": {
+    "back": "Back to categories",
+    "refresh": "Refresh briefings",
+    "lessonSet": "Lesson set",
+    "briefings": "briefings",
+    "comingSoon": "More briefings for {{name}} are coming soon.",
+    "whyItMatters": "Why it matters:",
+    "learnMore": "Learn more"
+  },
+  "bucket": {
+    "daily": "Daily",
+    "weekly": "Weekly",
+    "monthly": "Monthly"
+  },
+  "window": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "week": "This Week",
+    "lastWeek": "Last Week",
+    "month": "This Month",
+    "lastMonth": "Last Month"
+  },
+  "level": {
+    "label": "Reading level",
+    "beginner": "Beginner",
+    "intermediate": "Intermediate",
+    "advanced": "Advanced",
+    "beginnerHint": "Plain language, no jargon.",
+    "intermediateHint": "Some industry knowledge assumed.",
+    "advancedHint": "Technical depth and second-order effects.",
+    "fallbackNotice": "Showing the standard (intermediate) explanation. Beginner / advanced rewrites will arrive with the LLM pipeline."
+  },
+  "detail": {
+    "whatHappened": "What happened?",
+    "whyMatters": "Why it matters",
+    "background": "Background",
+    "industryImpact": "Industry impact",
+    "keyCompanies": "Key companies",
+    "keywords": "Keywords",
+    "miniQuiz": "Mini quiz",
+    "checkAnswer": "Check answer",
+    "correct": "✅ Nice — that's correct.",
+    "incorrect": "❌ Not quite. Correct answer: {{answer}}.",
+    "viewSource": "View original source",
+    "markLearned": "Mark as learned",
+    "saving": "Saving…",
+    "signInPrompt": "Sign in to track progress & streaks.",
+    "translationMissing": "Korean translation coming soon — showing the English original."
+  },
+  "profile": {
+    "title": "Your progress",
+    "subtitle": "Keep your streak going by learning at least one briefing per day.",
+    "currentStreak": "Current streak",
+    "longestStreak": "Longest streak",
+    "learned": "Briefings learned",
+    "day": "day",
+    "days": "days",
+    "quizAccuracy": "Quiz accuracy",
+    "recent": "of {{total}} recent attempts",
+    "recentlyLearned": "Recently learned",
+    "loading": "Loading…",
+    "empty": "You haven't marked any briefings yet.",
+    "pickCategory": "Pick a category"
+  },
+  "lang": {
+    "label": "Language",
+    "en": "English",
+    "ko": "한국어"
+  }
+}

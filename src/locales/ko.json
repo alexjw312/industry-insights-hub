@@ -1,0 +1,91 @@
+{
+  "nav": {
+    "signIn": "로그인",
+    "signOut": "로그아웃",
+    "streak": "연속 학습",
+    "profile": "프로필"
+  },
+  "home": {
+    "tagline": "오늘 · 이번 주 · 이번 달",
+    "headlineA": "오늘 가장 중요한",
+    "headlineB": "산업 트렌드",
+    "headlineC": "를 몇 분 만에 배워보세요.",
+    "subtitle": "빠르게 움직이는 산업을 위한 AI 기반 브리핑. 한 입 크기의 레슨, 초보자 친화적 설명, 그리고 학습한 내용을 점검하는 퀴즈까지.",
+    "ctaPick": "카테고리 선택",
+    "ctaSignIn": "로그인하고 진행도 저장",
+    "perBriefing": "브리핑당 3–7분",
+    "topStories": "기간별 핵심 3가지 스토리",
+    "pickIndustry": "관심 산업 선택",
+    "pickIndustrySub": "빠르게 움직이는 6개 카테고리. 더 추가 예정.",
+    "startLearning": "학습 시작"
+  },
+  "category": {
+    "back": "카테고리로 돌아가기",
+    "refresh": "브리핑 새로고침",
+    "lessonSet": "레슨 세트",
+    "briefings": "개 브리핑",
+    "comingSoon": "{{name}}의 더 많은 브리핑이 곧 추가됩니다.",
+    "whyItMatters": "왜 중요한가:",
+    "learnMore": "자세히 보기"
+  },
+  "bucket": {
+    "daily": "일간",
+    "weekly": "주간",
+    "monthly": "월간"
+  },
+  "window": {
+    "today": "오늘",
+    "yesterday": "어제",
+    "week": "이번 주",
+    "lastWeek": "지난 주",
+    "month": "이번 달",
+    "lastMonth": "지난 달"
+  },
+  "level": {
+    "label": "난이도",
+    "beginner": "초급",
+    "intermediate": "중급",
+    "advanced": "고급",
+    "beginnerHint": "쉬운 말, 전문 용어 없이.",
+    "intermediateHint": "기본 산업 지식 가정.",
+    "advancedHint": "기술적 깊이와 파급 효과.",
+    "fallbackNotice": "표준(중급) 설명을 표시 중입니다. 초급 / 고급 버전은 LLM 파이프라인과 함께 제공될 예정입니다."
+  },
+  "detail": {
+    "whatHappened": "무슨 일이 있었나?",
+    "whyMatters": "왜 중요한가",
+    "background": "배경",
+    "industryImpact": "산업 영향",
+    "keyCompanies": "주요 기업",
+    "keywords": "키워드",
+    "miniQuiz": "미니 퀴즈",
+    "checkAnswer": "정답 확인",
+    "correct": "✅ 정답입니다.",
+    "incorrect": "❌ 아쉽네요. 정답: {{answer}}.",
+    "viewSource": "원본 보기",
+    "markLearned": "학습 완료 표시",
+    "saving": "저장 중…",
+    "signInPrompt": "진행도 및 연속 학습을 추적하려면 로그인하세요.",
+    "translationMissing": "한국어 번역 준비 중입니다 — 원본(영어)을 표시합니다."
+  },
+  "profile": {
+    "title": "내 진행도",
+    "subtitle": "매일 한 개 이상의 브리핑을 학습하여 연속 기록을 이어가세요.",
+    "currentStreak": "현재 연속",
+    "longestStreak": "최장 연속",
+    "learned": "학습한 브리핑",
+    "day": "일",
+    "days": "일",
+    "quizAccuracy": "퀴즈 정확도",
+    "recent": "최근 {{total}}회 중",
+    "recentlyLearned": "최근 학습",
+    "loading": "불러오는 중…",
+    "empty": "아직 학습 완료한 브리핑이 없습니다.",
+    "pickCategory": "카테고리 선택"
+  },
+  "lang": {
+    "label": "언어",
+    "en": "English",
+    "ko": "한국어"
+  }
+}
