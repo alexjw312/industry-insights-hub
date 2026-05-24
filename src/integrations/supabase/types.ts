@@ -14,13 +14,87 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      quiz_attempts: {
+        Row: {
+          attempted_at: string
+          briefing_id: string
+          id: string
+          is_correct: boolean
+          selected_answer: string
+          user_id: string
+        }
+        Insert: {
+          attempted_at?: string
+          briefing_id: string
+          id?: string
+          is_correct: boolean
+          selected_answer: string
+          user_id: string
+        }
+        Update: {
+          attempted_at?: string
+          briefing_id?: string
+          id?: string
+          is_correct?: boolean
+          selected_answer?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_progress: {
+        Row: {
+          briefing_id: string
+          category: string
+          completed_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          briefing_id: string
+          category: string
+          completed_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          briefing_id?: string
+          category?: string
+          completed_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_streaks: {
+        Row: {
+          current_streak: number
+          last_active_date: string | null
+          longest_streak: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          current_streak?: number
+          last_active_date?: string | null
+          longest_streak?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          current_streak?: number
+          last_active_date?: string | null
+          longest_streak?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      bump_user_streak: { Args: { _user_id: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
