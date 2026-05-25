@@ -9,6 +9,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { BriefingDetail } from "@/components/BriefingDetail";
 import { CATEGORIES, getBriefingsForCategory } from "@/data/briefings";
+import { useLocalized } from "@/lib/localized";
 import {
   TIME_WINDOW_MAP,
   type Briefing,
@@ -22,12 +23,15 @@ export const Route = createFileRoute("/categories/$slug")({
     if (!cat) throw notFound();
     return { category: cat };
   },
-  head: ({ loaderData }) => ({
-    meta: [
-      { title: `${loaderData?.category.name ?? "Category"} briefings — TrendLingo` },
-      { name: "description", content: `Today, this week, and this month's top trends in ${loaderData?.category.name}.` },
-    ],
-  }),
+  head: ({ loaderData }) => {
+    const name = loaderData?.category.name.en ?? "Category";
+    return {
+      meta: [
+        { title: `${name} briefings — TrendLingo` },
+        { name: "description", content: `Today, this week, and this month's top trends in ${name}.` },
+      ],
+    };
+  },
   component: CategoryPage,
 });
 
@@ -36,6 +40,7 @@ const BUCKETS: TimeBucket[] = ["daily", "weekly", "monthly"];
 function CategoryPage() {
   const { category } = Route.useLoaderData();
   const { t } = useTranslation();
+  const loc = useLocalized();
   const [selected, setSelected] = useState<Briefing | null>(null);
   const [open, setOpen] = useState(false);
   // Per-bucket period memory

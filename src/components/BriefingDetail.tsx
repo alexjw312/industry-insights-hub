@@ -8,26 +8,33 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { toast } from "sonner";
-import type { Briefing, ReadingLevel } from "@/types";
+import type { Briefing, Localized, ReadingLevel } from "@/types";
 import { markBriefingLearned, submitQuizAttempt } from "@/lib/progress.functions";
 import { useSession } from "@/routes/__root";
 import { useReadingLevel } from "@/lib/preferences";
+import { useLocalized } from "@/lib/localized";
 
 const LEVELS: ReadingLevel[] = ["beginner", "intermediate", "advanced"];
 
-function pick(b: Briefing, level: ReadingLevel, field: "longExplanation" | "whyItMatters" | "backgroundContext" | "industryImpact") {
+function pick(
+  b: Briefing,
+  level: ReadingLevel,
+  field: "longExplanation" | "whyItMatters" | "backgroundContext" | "industryImpact",
+): Localized {
   return b.levels?.[level]?.[field] ?? b[field];
 }
 
 export function BriefingDetail({ briefing, open, onOpenChange }: {
   briefing: Briefing | null; open: boolean; onOpenChange: (v: boolean) => void;
 }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const loc = useLocalized();
   const { session } = useSession();
   const qc = useQueryClient();
   const markFn = useServerFn(markBriefingLearned);
   const quizFn = useServerFn(submitQuizAttempt);
-  const [picked, setPicked] = useState<string | null>(null);
+  // Track picked answer by its English value (stable identity across languages).
+  const [pickedEn, setPickedEn] = useState<string | null>(null);
   const [revealed, setRevealed] = useState(false);
   const [level, setLevel] = useReadingLevel();
 
@@ -45,13 +52,12 @@ export function BriefingDetail({ briefing, open, onOpenChange }: {
   });
 
   if (!briefing) return null;
-  const correctAnswer = briefing.quiz.correctAnswer;
+  const correctAnswerEn = briefing.quiz.correctAnswer.en;
   const hasOverride = !!briefing.levels?.[level];
   const showLevelNotice = level !== "intermediate" && !hasOverride;
-  const showKoNotice = i18n.language === "ko";
 
   function reset() {
-    setPicked(null);
+    setPickedEn(null);
     setRevealed(false);
   }
 
@@ -64,9 +70,9 @@ export function BriefingDetail({ briefing, open, onOpenChange }: {
             <Badge variant="outline">{briefing.readingTime}</Badge>
             <span className="text-xs text-muted-foreground">{briefing.publishedDate} · {briefing.sourceName}</span>
           </div>
-          <DialogTitle className="font-display text-2xl leading-tight">{briefing.title}</DialogTitle>
+          <DialogTitle className="font-display text-2xl leading-tight">{loc(briefing.title)}</DialogTitle>
           <DialogDescription className="text-base leading-relaxed text-foreground/80">
-            {briefing.shortSummary}
+            {loc(briefing.shortSummary)}
           </DialogDescription>
         </DialogHeader>
 
@@ -94,21 +100,18 @@ export function BriefingDetail({ briefing, open, onOpenChange }: {
           <p className="mt-2 text-xs text-muted-foreground">{t(`level.${level}Hint`)}</p>
         </div>
 
-        {(showLevelNotice || showKoNotice) && (
+        {showLevelNotice && (
           <div className="flex items-start gap-2 rounded-xl border border-dashed border-border bg-card p-3 text-xs text-muted-foreground">
             <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-            <div className="space-y-1">
-              {showLevelNotice && <p>{t("level.fallbackNotice")}</p>}
-              {showKoNotice && <p>{t("detail.translationMissing")}</p>}
-            </div>
+            <p>{t("level.fallbackNotice")}</p>
           </div>
         )}
 
         <div className="space-y-5 pt-2">
-          <Section title={t("detail.whatHappened")}>{pick(briefing, level, "longExplanation")}</Section>
-          <Section title={t("detail.whyMatters")}>{pick(briefing, level, "whyItMatters")}</Section>
-          <Section title={t("detail.background")}>{pick(briefing, level, "backgroundContext")}</Section>
-          <Section title={t("detail.industryImpact")}>{pick(briefing, level, "industryImpact")}</Section>
+          <Section title={t("detail.whatHappened")}>{loc(pick(briefing, level, "longExplanation"))}</Section>
+          <Section title={t("detail.whyMatters")}>{loc(pick(briefing, level, "whyItMatters"))}</Section>
+          <Section title={t("detail.background")}>{loc(pick(briefing, level, "backgroundContext"))}</Section>
+          <Section title={t("detail.industryImpact")}>{loc(pick(briefing, level, "industryImpact"))}</Section>
 
           {briefing.keyCompanies.length > 0 && (
             <div>
@@ -130,16 +133,16 @@ export function BriefingDetail({ briefing, open, onOpenChange }: {
             <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
               <Sparkles className="h-4 w-4 text-accent" /> {t("detail.miniQuiz")}
             </div>
-            <p className="mb-4 font-medium">{briefing.quiz.question}</p>
+            <p className="mb-4 font-medium">{loc(briefing.quiz.question)}</p>
             <div className="space-y-2">
               {briefing.quiz.options.map((opt) => {
-                const isPicked = picked === opt;
-                const isCorrect = opt === correctAnswer;
+                const isPicked = pickedEn === opt.en;
+                const isCorrect = opt.en === correctAnswerEn;
                 const showState = revealed && (isPicked || isCorrect);
                 return (
                   <button
-                    key={opt}
-                    onClick={() => { if (!revealed) setPicked(opt); }}
+                    key={opt.en}
+                    onClick={() => { if (!revealed) setPickedEn(opt.en); }}
                     disabled={revealed}
                     className={`flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left text-sm transition-all ${
                       showState && isCorrect ? "border-success bg-success/10" :
@@ -148,7 +151,7 @@ export function BriefingDetail({ briefing, open, onOpenChange }: {
                       "border-border bg-card hover:border-primary/40"
                     }`}
                   >
-                    <span>{opt}</span>
+                    <span>{loc(opt)}</span>
                     {showState && isCorrect && <Check className="h-4 w-4 text-success" />}
                     {showState && isPicked && !isCorrect && <X className="h-4 w-4 text-destructive" />}
                   </button>
@@ -158,17 +161,19 @@ export function BriefingDetail({ briefing, open, onOpenChange }: {
             {!revealed ? (
               <Button
                 className="mt-4 w-full"
-                disabled={!picked}
+                disabled={!pickedEn}
                 onClick={() => {
                   setRevealed(true);
-                  if (session) recordQuiz.mutate({ selected: picked!, correct: picked === correctAnswer });
+                  if (session) recordQuiz.mutate({ selected: pickedEn!, correct: pickedEn === correctAnswerEn });
                 }}
               >
                 {t("detail.checkAnswer")}
               </Button>
             ) : (
               <p className="mt-4 text-sm text-muted-foreground">
-                {picked === correctAnswer ? t("detail.correct") : t("detail.incorrect", { answer: correctAnswer })}
+                {pickedEn === correctAnswerEn
+                  ? t("detail.correct")
+                  : t("detail.incorrect", { answer: loc(briefing.quiz.correctAnswer) })}
               </p>
             )}
           </div>

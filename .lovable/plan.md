@@ -1,84 +1,70 @@
-# TrendLingo — Personalization & Polish Update
+# Plan: Translate content with the language switch
 
-## 1. Difficulty levels (per-user reading mode)
+Right now only UI chrome strings (`src/locales/en.json` / `ko.json`) swap when you toggle EN/KO. The category names, descriptions, and every briefing field (`title`, `shortSummary`, `longExplanation`, `whyItMatters`, `backgroundContext`, `industryImpact`, `quiz.question`, `quiz.options`, `quiz.correctAnswer`) live as plain English strings in `src/data/briefings.ts` and never change.
 
-User-selectable reading level that controls **how each briefing is explained**:
+This plan ships **Phase A now** (hand-authored KO) and **queues Phase B** (AI Gateway + RSS) as the next milestone.
 
-- **Beginner** — plain language, analogies, no jargon. Defines every acronym.
-- **Intermediate** — assumes basic industry knowledge. Default.
-- **Advanced** — technical depth, numbers, second-order effects.
+---
 
-Implementation:
-- Extend each `Briefing` so the long-form fields (`longExplanation`, `whyItMatters`, `backgroundContext`, `industryImpact`) become `{ beginner, intermediate, advanced }` objects. Mock data filled for AI / Semiconductors / Stocks; other categories fall back to `intermediate`.
-- **Reading level** segmented control in the briefing detail modal header (instant switch, no reload).
-- Persist preference: `localStorage` for guests, `profiles.reading_level` column for logged-in users (synced on login).
-- Quiz also becomes `{ beginner, intermediate, advanced }` with tougher distractors per level.
-- Placeholder `summarizeWithLLM(briefing, { level })` signature updated for future LLM regeneration per level.
+## Phase A — Hand-authored KO (this round)
 
-## 2. Time windows — nested current/previous
+### 1. Type changes (`src/types.ts`)
+- Add `type Localized = { en: string; ko: string }`.
+- On `Briefing`, convert these fields from `string` → `Localized`: `title`, `shortSummary`, `longExplanation`, `whyItMatters`, `backgroundContext`, `industryImpact`.
+- On `Quiz`: `question: Localized`, `options: Localized[]`, `correctAnswer: Localized`.
+- On `LevelOverrides`: same `Localized` shape for the four overridable text fields.
+- On `CategoryMeta`: `name: Localized`, `description: Localized`.
+- Keep `keyCompanies`, `keywords`, `sourceName` as plain strings (proper nouns / brands).
 
-Top-level tabs stay **Daily / Weekly / Monthly** (3 tabs). Inside each, a smaller secondary toggle switches between current and previous period:
+### 2. Helper (`src/lib/preferences.ts` or new `src/lib/localized.ts`)
+- Add `useLocalized()` → returns `(loc: Localized) => string` based on `i18n.language`, with `en` fallback when `ko` is empty.
+- Add `pickLocalized(loc, lang)` for non-hook contexts (e.g. inside `pick()` in `BriefingDetail`).
 
-```text
-[ Daily ] [ Weekly ] [ Monthly ]
-   └─ ( Today | Yesterday )
-   └─ ( This Week | Last Week )
-   └─ ( This Month | Last Month )
-```
+### 3. Data rewrite (`src/data/briefings.ts`)
+- Convert all 6 `CATEGORIES` entries to `Localized` (KO category names: AI=인공지능, Semiconductors=반도체, Stocks=주식, Automotive=자동차, Healthcare=헬스케어, Energy=에너지).
+- Translate every existing mock briefing's text fields + quizzes into KO. I'll write the KO copy myself at the same reading register as the EN.
+- Remove the "Korean translation coming soon" notice (`detail.translationMissing`) — no longer accurate.
 
-- `TimeWindow` type becomes `{ bucket: 'daily'|'weekly'|'monthly', period: 'current'|'previous' }`.
-- Outer = existing `Tabs`; inner = compact `ToggleGroup` (single-select pill) above the briefing grid. Stays readable on the 729px viewport.
-- Default lands on current period; selection is remembered per-bucket while navigating (so switching Daily→Weekly→Daily keeps your "Yesterday" pick).
-- Mock data gets a small "previous period" set per category (3 per prior window for AI/Semi/Stocks, 1–2 elsewhere) so tabs aren't empty.
-- Profile page gains a "this week vs last week" comparison stat.
+### 4. Component updates
+- `src/components/BriefingDetail.tsx`: `pick()` now returns `Localized`; render via `useLocalized()`. Quiz options/answer comparison switches to comparing `Localized` by `en` key (stable identity) but rendering localized label.
+- `src/routes/categories.$slug.tsx`: category header + briefing cards use `useLocalized()`.
+- `src/routes/index.tsx`: category grid renders localized `name` / `description`.
+- `src/routes/profile.tsx`: recently-learned list shows localized titles.
 
-## 3. Internationalization — English & Korean
+### 5. Cleanup
+- Drop `detail.translationMissing` from both locale files; remove the `showKoNotice` branch in `BriefingDetail`.
+- Keep the reading-level fallback notice (still relevant — beginner/advanced rewrites are still sparse).
 
-- Add `i18next` + `react-i18next`.
-- UI strings extracted to `src/locales/{en,ko}.json` (nav, buttons, tab labels, modal sections, profile stats, auth, toasts).
-- Briefing content is bilingual: every text field becomes `{ en, ko }`. Mock data filled for both languages on AI/Semi/Stocks; others ship English-only with a "Translation coming soon" notice when KO is selected and missing.
-- Language switcher in the header (EN / KO). Persisted in `localStorage` for guests, `profiles.language` for logged-in users.
-- `<html lang>` updated reactively for SEO/a11y. Per-route meta titles/descriptions localized.
-- Placeholder `summarizeWithLLM(briefing, { level, lang })` updated for future translation pipeline.
+### Out of scope for Phase A
+- No DB changes. Briefings remain client-side mock.
+- No SEO/meta translation for dynamic routes (already EN-only and acceptable for mock content).
 
-## 4. Per-category theming
+---
 
-Each category gets its own accent color + subtle gradient, applied to category cards, the category header, badges, and the "Why it matters" highlight box.
+## Phase B — Queued for next round (not built this turn)
 
-Suggested palette (all defined as CSS tokens in `src/styles.css`):
+Logged in `.lovable/plan.md` so we don't lose it:
 
-- **AI** — violet (`oklch(0.62 0.18 290)`)
-- **Semiconductors** — electric blue (`oklch(0.62 0.16 240)`)
-- **Stocks** — emerald green (current primary)
-- **Automotive / EV** — orange (`oklch(0.68 0.17 50)`)
-- **Healthcare** — teal (`oklch(0.65 0.12 190)`)
-- **Energy** — amber/gold (`oklch(0.72 0.15 80)`)
+1. **AI Gateway translation fallback** — server fn `translateBriefing({ id, level, lang })` calls Lovable AI (`google/gemini-2.5-flash`), caches result in a new `briefing_translations` table keyed by `(briefing_id, level, lang, field)`. UI shows skeleton on first view, cached forever after. Useful once briefings come from a feed.
+2. **Real news via RSS** — server route under `src/routes/api/public/hooks/ingest-rss.ts` triggered by `pg_cron` (hourly). Per category, a curated RSS list (e.g. AI: TechCrunch AI, The Verge AI; Semiconductors: AnandTech, Tom's Hardware; Stocks: Reuters Markets, WSJ Markets; etc.). Parser writes raw items into a new `briefings_raw` table; a second job summarizes + level-rewrites via Lovable AI and writes the final localized `briefings` table that the UI reads (replacing `src/data/briefings.ts`).
+3. **Migration path** — once Phase B is live, `briefings.ts` becomes a seed/fallback only; UI swaps to a server-fn `getBriefings({ category, window, lang, level })`.
 
-`CATEGORIES` gains `colorToken` + `gradientToken`. A small `useCategoryTheme(slug)` hook injects scoped CSS vars (`--category`, `--category-gradient`) on the category page wrapper. Global semantic tokens (`--primary`, etc.) stay untouched.
-
-## 5. Other ideas worth considering
-
-Pick any to include now; rest can be deferred:
-
-1. **Daily lesson goal & streak protection** — goal of 1/3/5 briefings/day, progress ring in header, one "freeze" per week.
-2. **Bookmark / "Read later"** — save briefings to a personal list on profile.
-3. **Search & keyword filter** — search across briefings, filter by tag (`#NVIDIA`, `#EV`) across categories.
-4. **"Trending now" on home** — top 3 by importance across all industries, for discovery.
-5. **Dark mode toggle** — tokens already OKLCH; mostly a `.dark` palette + header switch.
-6. **Share a briefing** — OG image per briefing + copy-link button. Great for portfolio demos.
-7. **Audio mode (TTS)** — browser `SpeechSynthesis`, no backend cost.
-8. **Glossary tooltips** — hover/tap acronyms (LLM, HBM, P/E) for inline definitions. Pairs naturally with Beginner mode.
-
-My recommendation for this round: **#1, #3, #5, #8** — reinforce the learning-app feel without ballooning scope.
+---
 
 ## Technical notes
 
-- DB migration: new `profiles` table with `reading_level` (`text default 'intermediate'`), `language` (`text default 'en'`), optionally `daily_goal int`. Auto-created on first login via trigger on `auth.users`. RLS: user can read/update own row.
-- New server fn `updatePreferences({ reading_level?, language?, daily_goal? })` protected by `requireSupabaseAuth`.
-- `Briefing` type refactor is the largest mechanical change — done in one pass.
-- Guest preferences (localStorage) sync into Supabase on first login (server wins if set, else use local).
+- `Localized` lookup uses `i18n.language` from `react-i18next`; fallback chain is `ko → en`. Empty string in `ko` still falls back so partial translations are safe.
+- Quiz answer comparison must use a stable key (the `en` value) so a user picking an answer in KO still grades correctly — store `picked` as the `Localized` object, compare `picked.en === correctAnswer.en`.
+- No DB migration in Phase A. Phase B will introduce `briefings`, `briefings_raw`, `briefing_translations` tables with RLS (public select, service-role write).
+- No new dependencies for Phase A.
 
-## Questions before I build
-
-1. For Korean, do you want me to **translate the existing mock briefings into KO myself**, or ship KO with placeholder copy and let real translation come with the LLM integration later?
-2. Which of the "other ideas" should I include in this round? (My pick: 1, 3, 5, 8.)
+## Files touched (Phase A)
+- `src/types.ts` — add `Localized`, change field types
+- `src/data/briefings.ts` — full KO translation pass
+- `src/lib/localized.ts` (new) — `useLocalized` hook + `pickLocalized` helper
+- `src/components/BriefingDetail.tsx` — localized rendering, quiz comparison fix
+- `src/routes/index.tsx` — localized category cards
+- `src/routes/categories.$slug.tsx` — localized header + briefing cards
+- `src/routes/profile.tsx` — localized recent-learned titles
+- `src/locales/{en,ko}.json` — remove `detail.translationMissing`
+- `.lovable/plan.md` — append Phase B backlog
