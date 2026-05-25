@@ -30,20 +30,26 @@ export type Difficulty = "Beginner" | "Intermediate" | "Advanced";
 export type ReadingLevel = "beginner" | "intermediate" | "advanced";
 export type Language = "en" | "ko";
 
+/** Bilingual string. `ko` may be an empty string — UI falls back to `en`. */
+export interface Localized {
+  en: string;
+  ko: string;
+}
+
 export interface Quiz {
-  question: string;
-  options: string[];
-  correctAnswer: string;
+  question: Localized;
+  options: Localized[];
+  correctAnswer: Localized;
 }
 
 export type LevelOverrides = Partial<
   Record<
     ReadingLevel,
     Partial<{
-      longExplanation: string;
-      whyItMatters: string;
-      backgroundContext: string;
-      industryImpact: string;
+      longExplanation: Localized;
+      whyItMatters: Localized;
+      backgroundContext: Localized;
+      industryImpact: Localized;
     }>
   >
 >;
@@ -52,12 +58,12 @@ export interface Briefing {
   id: string;
   category: Category;
   timeWindow: TimeWindow;
-  title: string;
-  shortSummary: string;
-  longExplanation: string;
-  whyItMatters: string;
-  backgroundContext: string;
-  industryImpact: string;
+  title: Localized;
+  shortSummary: Localized;
+  longExplanation: Localized;
+  whyItMatters: Localized;
+  backgroundContext: Localized;
+  industryImpact: Localized;
   keyCompanies: string[];
   keywords: string[];
   difficulty: Difficulty;
@@ -73,8 +79,8 @@ export interface Briefing {
 
 export interface CategoryMeta {
   slug: Category;
-  name: string;
-  description: string;
+  name: Localized;
+  description: Localized;
   icon: string;
   accent: string;
   /** CSS color token name, e.g. "category-ai" — defined in styles.css */
