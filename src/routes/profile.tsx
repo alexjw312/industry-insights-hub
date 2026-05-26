@@ -7,6 +7,7 @@ import { Flame, BookOpen, Award } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Badge } from "@/components/ui/badge";
 import { getUserProgress } from "@/lib/progress.functions";
+import { useLocalized } from "@/lib/localized";
 import { BRIEFINGS } from "@/data/briefings";
 import { useSession } from "@/routes/__root";
 
