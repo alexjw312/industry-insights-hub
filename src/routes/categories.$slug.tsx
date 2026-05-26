@@ -140,11 +140,11 @@ function CategoryPage() {
                           <Badge variant="secondary">{b.difficulty}</Badge>
                           <Badge variant="outline">{b.readingTime}</Badge>
                         </div>
-                        <h3 className="font-display text-lg font-semibold leading-snug">{b.title}</h3>
-                        <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{b.shortSummary}</p>
+                        <h3 className="font-display text-lg font-semibold leading-snug">{loc(b.title)}</h3>
+                        <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{loc(b.shortSummary)}</p>
                         <div className="mt-3 rounded-xl bg-secondary/50 p-3 text-xs">
                           <span className="font-semibold text-foreground">{t("category.whyItMatters")} </span>
-                          <span className="text-muted-foreground">{b.whyItMatters}</span>
+                          <span className="text-muted-foreground">{loc(b.whyItMatters)}</span>
                         </div>
                         <div className="mt-3 flex flex-wrap gap-1">
                           {b.keywords.slice(0, 3).map((k) => (
