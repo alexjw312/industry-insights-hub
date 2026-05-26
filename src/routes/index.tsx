@@ -4,6 +4,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Header } from "@/components/Header";
+import { useLocalized } from "@/lib/localized";
 import { Button } from "@/components/ui/button";
 import { CATEGORIES } from "@/data/briefings";
 
