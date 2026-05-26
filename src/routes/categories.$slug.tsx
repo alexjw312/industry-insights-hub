@@ -70,8 +70,8 @@ function CategoryPage() {
               aria-hidden
             />
             <div>
-              <h1 className="font-display text-3xl font-semibold sm:text-4xl">{category.name}</h1>
-              <p className="mt-1 text-muted-foreground">{category.description}</p>
+              <h1 className="font-display text-3xl font-semibold sm:text-4xl">{loc(category.name)}</h1>
+              <p className="mt-1 text-muted-foreground">{loc(category.description)}</p>
             </div>
           </div>
           <Button variant="outline" size="sm" className="gap-1.5" onClick={() => window.location.reload()}>
@@ -122,7 +122,7 @@ function CategoryPage() {
 
                 {items.length === 0 ? (
                   <div className="rounded-2xl border border-dashed border-border p-10 text-center text-muted-foreground">
-                    {t("category.comingSoon", { name: category.name })}
+                    {t("category.comingSoon", { name: loc(category.name) })}
                   </div>
                 ) : (
                   <div className="grid gap-5 lg:grid-cols-3">
@@ -140,11 +140,11 @@ function CategoryPage() {
                           <Badge variant="secondary">{b.difficulty}</Badge>
                           <Badge variant="outline">{b.readingTime}</Badge>
                         </div>
-                        <h3 className="font-display text-lg font-semibold leading-snug">{b.title}</h3>
-                        <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{b.shortSummary}</p>
+                        <h3 className="font-display text-lg font-semibold leading-snug">{loc(b.title)}</h3>
+                        <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{loc(b.shortSummary)}</p>
                         <div className="mt-3 rounded-xl bg-secondary/50 p-3 text-xs">
                           <span className="font-semibold text-foreground">{t("category.whyItMatters")} </span>
-                          <span className="text-muted-foreground">{b.whyItMatters}</span>
+                          <span className="text-muted-foreground">{loc(b.whyItMatters)}</span>
                         </div>
                         <div className="mt-3 flex flex-wrap gap-1">
                           {b.keywords.slice(0, 3).map((k) => (
