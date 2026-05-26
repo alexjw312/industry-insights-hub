@@ -24,6 +24,7 @@ export const Route = createFileRoute("/")({
 
 function HomePage() {
   const { t } = useTranslation();
+  const loc = useLocalized();
   return (
     <div className="min-h-screen">
       <Header />
