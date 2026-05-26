@@ -20,6 +20,7 @@ function ProfilePage() {
   const { session, ready } = useSession();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const loc = useLocalized();
   const fn = useServerFn(getUserProgress);
   useEffect(() => {
     if (ready && !session) navigate({ to: "/login" });
