@@ -70,8 +70,8 @@ function CategoryPage() {
               aria-hidden
             />
             <div>
-              <h1 className="font-display text-3xl font-semibold sm:text-4xl">{category.name}</h1>
-              <p className="mt-1 text-muted-foreground">{category.description}</p>
+              <h1 className="font-display text-3xl font-semibold sm:text-4xl">{loc(category.name)}</h1>
+              <p className="mt-1 text-muted-foreground">{loc(category.description)}</p>
             </div>
           </div>
           <Button variant="outline" size="sm" className="gap-1.5" onClick={() => window.location.reload()}>
