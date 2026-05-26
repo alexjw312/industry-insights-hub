@@ -84,8 +84,8 @@ function HomePage() {
                   >
                     <Icon className="h-6 w-6" />
                   </div>
-                  <h3 className="text-lg font-semibold">{cat.name}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{cat.description}</p>
+                  <h3 className="text-lg font-semibold">{loc(cat.name)}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{loc(cat.description)}</p>
                   <div
                     className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium"
                     style={{ color: tint }}
