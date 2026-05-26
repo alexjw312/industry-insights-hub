@@ -122,7 +122,7 @@ function CategoryPage() {
 
                 {items.length === 0 ? (
                   <div className="rounded-2xl border border-dashed border-border p-10 text-center text-muted-foreground">
-                    {t("category.comingSoon", { name: category.name })}
+                    {t("category.comingSoon", { name: loc(category.name) })}
                   </div>
                 ) : (
                   <div className="grid gap-5 lg:grid-cols-3">
