@@ -1,14 +1,18 @@
 import { useState } from "react";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { ArrowLeft, ArrowRight, BookOpen, RefreshCw } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { BriefingDetail } from "@/components/BriefingDetail";
-import { CATEGORIES, getBriefingsForCategory } from "@/data/briefings";
+import { CATEGORIES } from "@/data/briefings";
+import { getBriefings } from "@/lib/briefings.functions";
 import { useLocalized } from "@/lib/localized";
 import {
   TIME_WINDOW_MAP,
@@ -89,7 +93,6 @@ function CategoryPage() {
           {BUCKETS.map((bucket) => {
             const period = periods[bucket];
             const tw = TIME_WINDOW_MAP[bucket][period];
-            const items = getBriefingsForCategory(category.slug, tw);
             return (
               <TabsContent key={bucket} value={bucket}>
                 <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -114,56 +117,14 @@ function CategoryPage() {
                       {t(`window.${TIME_WINDOW_MAP[bucket].previous}`)}
                     </ToggleGroupItem>
                   </ToggleGroup>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <BookOpen className="h-4 w-4" />
-                    <span>{t("category.lessonSet")}: {t(`window.${tw}`)} · {items.length} {t("category.briefings")}</span>
-                  </div>
                 </div>
 
-                {items.length === 0 ? (
-                  <div className="rounded-2xl border border-dashed border-border p-10 text-center text-muted-foreground">
-                    {t("category.comingSoon", { name: loc(category.name) })}
-                  </div>
-                ) : (
-                  <div className="grid gap-5 lg:grid-cols-3">
-                    {items.map((b) => (
-                      <button
-                        key={b.id}
-                        onClick={() => { setSelected(b); setOpen(true); }}
-                        className="group flex h-full flex-col rounded-2xl border border-border bg-card p-5 text-left transition-all hover:-translate-y-1"
-                        style={{
-                          boxShadow: "var(--shadow-elegant)",
-                          borderTop: "3px solid var(--category)",
-                        }}
-                      >
-                        <div className="mb-3 flex flex-wrap items-center gap-1.5">
-                          <Badge variant="secondary">{b.difficulty}</Badge>
-                          <Badge variant="outline">{b.readingTime}</Badge>
-                        </div>
-                        <h3 className="font-display text-lg font-semibold leading-snug">{loc(b.title)}</h3>
-                        <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{loc(b.shortSummary)}</p>
-                        <div className="mt-3 rounded-xl bg-secondary/50 p-3 text-xs">
-                          <span className="font-semibold text-foreground">{t("category.whyItMatters")} </span>
-                          <span className="text-muted-foreground">{loc(b.whyItMatters)}</span>
-                        </div>
-                        <div className="mt-3 flex flex-wrap gap-1">
-                          {b.keywords.slice(0, 3).map((k) => (
-                            <span key={k} className="text-xs text-muted-foreground">#{k}</span>
-                          ))}
-                        </div>
-                        <div className="mt-auto flex items-center justify-between pt-4 text-xs text-muted-foreground">
-                          <span>{b.sourceName}</span>
-                          <span
-                            className="inline-flex items-center gap-1 font-medium"
-                            style={{ color: "var(--category)" }}
-                          >
-                            {t("category.learnMore")} <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
-                          </span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
+                <BriefingsGrid
+                  category={category.slug}
+                  timeWindow={tw}
+                  categoryName={loc(category.name)}
+                  onPick={(b) => { setSelected(b); setOpen(true); }}
+                />
               </TabsContent>
             );
           })}
@@ -173,3 +134,90 @@ function CategoryPage() {
     </div>
   );
 }
+
+function BriefingsGrid({
+  category,
+  timeWindow,
+  categoryName,
+  onPick,
+}: {
+  category: string;
+  timeWindow: import("@/types").TimeWindow;
+  categoryName: string;
+  onPick: (b: Briefing) => void;
+}) {
+  const { t } = useTranslation();
+  const loc = useLocalized();
+  const fetchBriefings = useServerFn(getBriefings);
+  const { data, isLoading } = useQuery({
+    queryKey: ["briefings", category, timeWindow],
+    queryFn: () => fetchBriefings({ data: { category, timeWindow } }),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const items = data?.briefings ?? [];
+
+  return (
+    <>
+      <div className="mb-3 flex items-center gap-2 text-sm text-muted-foreground">
+        <BookOpen className="h-4 w-4" />
+        <span>
+          {t("category.lessonSet")}: {t(`window.${timeWindow}`)} ·{" "}
+          {isLoading ? "…" : `${items.length} ${t("category.briefings")}`}
+        </span>
+      </div>
+
+      {isLoading ? (
+        <div className="grid gap-5 lg:grid-cols-3">
+          {[0, 1, 2].map((i) => (
+            <Skeleton key={i} className="h-64 rounded-2xl" />
+          ))}
+        </div>
+      ) : items.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-border p-10 text-center text-muted-foreground">
+          {t("category.comingSoon", { name: categoryName })}
+        </div>
+      ) : (
+        <div className="grid gap-5 lg:grid-cols-3">
+          {items.map((b) => (
+            <button
+              key={b.id}
+              onClick={() => onPick(b)}
+              className="group flex h-full flex-col rounded-2xl border border-border bg-card p-5 text-left transition-all hover:-translate-y-1"
+              style={{
+                boxShadow: "var(--shadow-elegant)",
+                borderTop: "3px solid var(--category)",
+              }}
+            >
+              <div className="mb-3 flex flex-wrap items-center gap-1.5">
+                <Badge variant="secondary">{b.difficulty}</Badge>
+                <Badge variant="outline">{b.readingTime}</Badge>
+              </div>
+              <h3 className="font-display text-lg font-semibold leading-snug">{loc(b.title)}</h3>
+              <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{loc(b.shortSummary)}</p>
+              <div className="mt-3 rounded-xl bg-secondary/50 p-3 text-xs">
+                <span className="font-semibold text-foreground">{t("category.whyItMatters")} </span>
+                <span className="text-muted-foreground">{loc(b.whyItMatters)}</span>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-1">
+                {b.keywords.slice(0, 3).map((k) => (
+                  <span key={k} className="text-xs text-muted-foreground">#{k}</span>
+                ))}
+              </div>
+              <div className="mt-auto flex items-center justify-between pt-4 text-xs text-muted-foreground">
+                <span>{b.sourceName}</span>
+                <span
+                  className="inline-flex items-center gap-1 font-medium"
+                  style={{ color: "var(--category)" }}
+                >
+                  {t("category.learnMore")} <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+                </span>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+

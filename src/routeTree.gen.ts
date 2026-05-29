@@ -13,6 +13,8 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CategoriesSlugRouteImport } from './routes/categories.$slug'
+import { Route as ApiPublicHooksSummarizeBriefingsRouteImport } from './routes/api/public/hooks/summarize-briefings'
+import { Route as ApiPublicHooksIngestRssRouteImport } from './routes/api/public/hooks/ingest-rss'
 
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
@@ -34,18 +36,33 @@ const CategoriesSlugRoute = CategoriesSlugRouteImport.update({
   path: '/categories/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksSummarizeBriefingsRoute =
+  ApiPublicHooksSummarizeBriefingsRouteImport.update({
+    id: '/api/public/hooks/summarize-briefings',
+    path: '/api/public/hooks/summarize-briefings',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksIngestRssRoute = ApiPublicHooksIngestRssRouteImport.update({
+  id: '/api/public/hooks/ingest-rss',
+  path: '/api/public/hooks/ingest-rss',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/categories/$slug': typeof CategoriesSlugRoute
+  '/api/public/hooks/ingest-rss': typeof ApiPublicHooksIngestRssRoute
+  '/api/public/hooks/summarize-briefings': typeof ApiPublicHooksSummarizeBriefingsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/categories/$slug': typeof CategoriesSlugRoute
+  '/api/public/hooks/ingest-rss': typeof ApiPublicHooksIngestRssRoute
+  '/api/public/hooks/summarize-briefings': typeof ApiPublicHooksSummarizeBriefingsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +70,34 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/categories/$slug': typeof CategoriesSlugRoute
+  '/api/public/hooks/ingest-rss': typeof ApiPublicHooksIngestRssRoute
+  '/api/public/hooks/summarize-briefings': typeof ApiPublicHooksSummarizeBriefingsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/profile' | '/categories/$slug'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/profile'
+    | '/categories/$slug'
+    | '/api/public/hooks/ingest-rss'
+    | '/api/public/hooks/summarize-briefings'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/profile' | '/categories/$slug'
-  id: '__root__' | '/' | '/login' | '/profile' | '/categories/$slug'
+  to:
+    | '/'
+    | '/login'
+    | '/profile'
+    | '/categories/$slug'
+    | '/api/public/hooks/ingest-rss'
+    | '/api/public/hooks/summarize-briefings'
+  id:
+    | '__root__'
+    | '/'
+    | '/login'
+    | '/profile'
+    | '/categories/$slug'
+    | '/api/public/hooks/ingest-rss'
+    | '/api/public/hooks/summarize-briefings'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,6 +105,8 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ProfileRoute: typeof ProfileRoute
   CategoriesSlugRoute: typeof CategoriesSlugRoute
+  ApiPublicHooksIngestRssRoute: typeof ApiPublicHooksIngestRssRoute
+  ApiPublicHooksSummarizeBriefingsRoute: typeof ApiPublicHooksSummarizeBriefingsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -99,6 +139,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CategoriesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/summarize-briefings': {
+      id: '/api/public/hooks/summarize-briefings'
+      path: '/api/public/hooks/summarize-briefings'
+      fullPath: '/api/public/hooks/summarize-briefings'
+      preLoaderRoute: typeof ApiPublicHooksSummarizeBriefingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/ingest-rss': {
+      id: '/api/public/hooks/ingest-rss'
+      path: '/api/public/hooks/ingest-rss'
+      fullPath: '/api/public/hooks/ingest-rss'
+      preLoaderRoute: typeof ApiPublicHooksIngestRssRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -107,17 +161,9 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ProfileRoute: ProfileRoute,
   CategoriesSlugRoute: CategoriesSlugRoute,
+  ApiPublicHooksIngestRssRoute: ApiPublicHooksIngestRssRoute,
+  ApiPublicHooksSummarizeBriefingsRoute: ApiPublicHooksSummarizeBriefingsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

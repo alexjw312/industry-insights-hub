@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { getUserProgress } from "@/lib/progress.functions";
 import { useLocalized } from "@/lib/localized";
 import { BRIEFINGS } from "@/data/briefings";
+import { getRecentBriefingsByIds } from "@/lib/briefings.functions";
 import { useSession } from "@/routes/__root";
 
 export const Route = createFileRoute("/profile")({
@@ -32,6 +33,15 @@ function ProfilePage() {
     enabled: !!session,
   });
 
+  const completedIds = (data?.completed ?? []).map((p) => p.briefing_id);
+  const fetchByIds = useServerFn(getRecentBriefingsByIds);
+  const { data: liveBriefings } = useQuery({
+    queryKey: ["recent-briefings", completedIds.slice(0, 20)],
+    queryFn: () => fetchByIds({ data: { ids: completedIds.slice(0, 20) } }),
+    enabled: completedIds.length > 0,
+  });
+  const liveMap = new Map((liveBriefings?.briefings ?? []).map((b) => [b.id, b]));
+
   if (!session) return null;
 
   const completed = data?.completed ?? [];
@@ -49,7 +59,7 @@ function ProfilePage() {
         <div className="mt-8 grid gap-4 sm:grid-cols-3">
           <StatCard icon={<Flame className="h-5 w-5 text-accent" />} label={t("profile.currentStreak")} value={`${streak.current_streak} ${streak.current_streak === 1 ? t("profile.day") : t("profile.days")}`} />
           <StatCard icon={<Award className="h-5 w-5 text-primary" />} label={t("profile.longestStreak")} value={`${streak.longest_streak} ${t("profile.days")}`} />
-          <StatCard icon={<BookOpen className="h-5 w-5 text-primary" />} label={t("profile.learned")} value={`${completed.length} / ${BRIEFINGS.length}`} />
+          <StatCard icon={<BookOpen className="h-5 w-5 text-primary" />} label={t("profile.learned")} value={`${completed.length}`} />
         </div>
 
         <div className="mt-6 rounded-2xl border border-border bg-card p-5" style={{ boxShadow: "var(--shadow-elegant)" }}>
@@ -70,7 +80,7 @@ function ProfilePage() {
         ) : (
           <ul className="space-y-2">
             {completed.slice(0, 20).map((p) => {
-              const b = BRIEFINGS.find((x) => x.id === p.briefing_id);
+              const b = liveMap.get(p.briefing_id) ?? BRIEFINGS.find((x) => x.id === p.briefing_id);
               return (
                 <li key={p.briefing_id} className="flex items-center justify-between rounded-xl border border-border bg-card px-4 py-3">
                   <div>
