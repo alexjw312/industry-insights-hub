@@ -59,7 +59,7 @@ function ProfilePage() {
         <div className="mt-8 grid gap-4 sm:grid-cols-3">
           <StatCard icon={<Flame className="h-5 w-5 text-accent" />} label={t("profile.currentStreak")} value={`${streak.current_streak} ${streak.current_streak === 1 ? t("profile.day") : t("profile.days")}`} />
           <StatCard icon={<Award className="h-5 w-5 text-primary" />} label={t("profile.longestStreak")} value={`${streak.longest_streak} ${t("profile.days")}`} />
-          <StatCard icon={<BookOpen className="h-5 w-5 text-primary" />} label={t("profile.learned")} value={`${completed.length} / ${BRIEFINGS.length}`} />
+          <StatCard icon={<BookOpen className="h-5 w-5 text-primary" />} label={t("profile.learned")} value={`${completed.length}`} />
         </div>
 
         <div className="mt-6 rounded-2xl border border-border bg-card p-5" style={{ boxShadow: "var(--shadow-elegant)" }}>
