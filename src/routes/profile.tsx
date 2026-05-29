@@ -80,7 +80,7 @@ function ProfilePage() {
         ) : (
           <ul className="space-y-2">
             {completed.slice(0, 20).map((p) => {
-              const b = BRIEFINGS.find((x) => x.id === p.briefing_id);
+              const b = liveMap.get(p.briefing_id) ?? BRIEFINGS.find((x) => x.id === p.briefing_id);
               return (
                 <li key={p.briefing_id} className="flex items-center justify-between rounded-xl border border-border bg-card px-4 py-3">
                   <div>
