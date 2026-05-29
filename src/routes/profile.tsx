@@ -33,6 +33,15 @@ function ProfilePage() {
     enabled: !!session,
   });
 
+  const completedIds = (data?.completed ?? []).map((p) => p.briefing_id);
+  const fetchByIds = useServerFn(getRecentBriefingsByIds);
+  const { data: liveBriefings } = useQuery({
+    queryKey: ["recent-briefings", completedIds.slice(0, 20)],
+    queryFn: () => fetchByIds({ data: { ids: completedIds.slice(0, 20) } }),
+    enabled: completedIds.length > 0,
+  });
+  const liveMap = new Map((liveBriefings?.briefings ?? []).map((b) => [b.id, b]));
+
   if (!session) return null;
 
   const completed = data?.completed ?? [];
