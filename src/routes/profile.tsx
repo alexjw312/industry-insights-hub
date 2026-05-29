@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { getUserProgress } from "@/lib/progress.functions";
 import { useLocalized } from "@/lib/localized";
 import { BRIEFINGS } from "@/data/briefings";
+import { getRecentBriefingsByIds } from "@/lib/briefings.functions";
 import { useSession } from "@/routes/__root";
 
 export const Route = createFileRoute("/profile")({
