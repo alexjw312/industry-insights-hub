@@ -14,6 +14,114 @@ export type Database = {
   }
   public: {
     Tables: {
+      briefings: {
+        Row: {
+          background_context: Json
+          category: string
+          created_at: string
+          difficulty: string
+          id: string
+          importance_score: number
+          industry_impact: Json
+          key_companies: string[]
+          keywords: string[]
+          levels: Json | null
+          long_explanation: Json
+          published_date: string
+          quiz: Json
+          reading_time: string
+          short_summary: Json
+          source_name: string
+          source_url: string
+          time_window: string
+          title: Json
+          why_it_matters: Json
+        }
+        Insert: {
+          background_context: Json
+          category: string
+          created_at?: string
+          difficulty: string
+          id?: string
+          importance_score?: number
+          industry_impact: Json
+          key_companies?: string[]
+          keywords?: string[]
+          levels?: Json | null
+          long_explanation: Json
+          published_date: string
+          quiz: Json
+          reading_time: string
+          short_summary: Json
+          source_name: string
+          source_url: string
+          time_window: string
+          title: Json
+          why_it_matters: Json
+        }
+        Update: {
+          background_context?: Json
+          category?: string
+          created_at?: string
+          difficulty?: string
+          id?: string
+          importance_score?: number
+          industry_impact?: Json
+          key_companies?: string[]
+          keywords?: string[]
+          levels?: Json | null
+          long_explanation?: Json
+          published_date?: string
+          quiz?: Json
+          reading_time?: string
+          short_summary?: Json
+          source_name?: string
+          source_url?: string
+          time_window?: string
+          title?: Json
+          why_it_matters?: Json
+        }
+        Relationships: []
+      }
+      briefings_raw: {
+        Row: {
+          category: string
+          description: string | null
+          fetched_at: string
+          id: string
+          process_error: string | null
+          processed_at: string | null
+          published_at: string
+          source_name: string
+          source_url: string
+          title: string
+        }
+        Insert: {
+          category: string
+          description?: string | null
+          fetched_at?: string
+          id?: string
+          process_error?: string | null
+          processed_at?: string | null
+          published_at: string
+          source_name: string
+          source_url: string
+          title: string
+        }
+        Update: {
+          category?: string
+          description?: string | null
+          fetched_at?: string
+          id?: string
+          process_error?: string | null
+          processed_at?: string | null
+          published_at?: string
+          source_name?: string
+          source_url?: string
+          title?: string
+        }
+        Relationships: []
+      }
       quiz_attempts: {
         Row: {
           attempted_at: string
