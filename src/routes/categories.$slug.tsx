@@ -1,14 +1,18 @@
 import { useState } from "react";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { ArrowLeft, ArrowRight, BookOpen, RefreshCw } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { BriefingDetail } from "@/components/BriefingDetail";
-import { CATEGORIES, getBriefingsForCategory } from "@/data/briefings";
+import { CATEGORIES } from "@/data/briefings";
+import { getBriefings } from "@/lib/briefings.functions";
 import { useLocalized } from "@/lib/localized";
 import {
   TIME_WINDOW_MAP,
